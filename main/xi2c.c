@@ -33,6 +33,15 @@ static esp_err_t XI2CRead(i2c_port_t i2c_num, uint8_t i2c_add, uint8_t* data_rd,
   return ret;
 }
 
+esp_err_t X_WrByte1(i2c_port_t i2c_num, uint8_t i2c_add, uint8_t data_wr) {
+
+    XI2CBuffer[0] = data_wr;
+    esp_err_t ret = XI2CWrite(i2c_num, i2c_add, XI2CBuffer, 0x1);
+    return ret;
+
+}
+
+
 esp_err_t X_WriteMulti(i2c_port_t i2c_num, uint8_t i2c_add, uint8_t index, uint32_t count, uint8_t* data_wr) {
   if (count > sizeof(XI2CBuffer) - 1) {
       return ESP_FAIL;

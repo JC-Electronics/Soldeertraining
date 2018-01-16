@@ -42,17 +42,16 @@
 #include "ssd1306.h"
 #include "nvs_flash.h"
 //#define BLINK_GPIO 4
-#define I2C_EXAMPLE_MASTER_SCL_IO    4    /*!< gpio number for I2C master clock */////////////
-#define I2C_EXAMPLE_MASTER_SDA_IO    5    /*!< gpio number for I2C master data  *//////////////
+#define I2C_EXAMPLE_MASTER_SCL_IO    32    /*!< gpio number for I2C master clock */////////////
+#define I2C_EXAMPLE_MASTER_SDA_IO    33    /*!< gpio number for I2C master data  *//////////////
 #define I2C_EXAMPLE_MASTER_NUM I2C_NUM_1   /*!< I2C port number for master dev */
 #define I2C_EXAMPLE_MASTER_TX_BUF_DISABLE   0   /*!< I2C master do not need buffer */
 #define I2C_EXAMPLE_MASTER_RX_BUF_DISABLE   0   /*!< I2C master do not need buffer */
 #define I2C_EXAMPLE_MASTER_FREQ_HZ    100000     /*!< I2C master clock frequency */
 
-
 const static char http_html_hdr[] = "HTTP/1.1 200 OK\r\nContent-type: text/html\r\n\r\n";
 
-const static char http_t[] = "<html><head><title>ESP32 PCM5102A webradio</title></head><body><h1>Web radio station list</h1><ul>";
+const static char http_t[] = "<html><head><title>ESP32 PCM5102A webradio</title></head><body><h1>ESP32 PCM5102A webradio</h1><h2>Station list</h2><ul>";
 const static char http_e[] = "</ul><a href=\"P\">prev</a>&nbsp;<a href=\"N\">next</a></body></html>";
 
 /* */
@@ -62,6 +61,8 @@ const static char http_e[] = "</ul><a href=\"P\">prev</a>&nbsp;<a href=\"N\">nex
 #define MAXSTATION 10
 
 static const char *preset_url = "http://wbgo.streamguys.net/wbgo96"; // preset station URL
+// static const char *preset_url = "http://wbgo-web.streamguys.net/audio/wbgo_8000.asx";
+// static const char *preset_url = "http://wbgo.streamguys.net/thejazzstream";
 /*
   "http://wbgo.streamguys.net/wbgo96",
   "http://wbgo.streamguys.net/thejazzstream",
@@ -79,6 +80,172 @@ static char sturl[MAXURLLEN]; // current station URL
 static const char *key_i = "i";
 static const char *key_n = "n";
 
+void PCM5122_WRITECOMMAND(uint8_t reg, uint8_t command)
+{
+  int ret;
+   ret = X_WrByte(I2C_NUM_1,0x4C,reg,command); 
+        if (ret == ESP_FAIL) {
+            printf("I2C Fail\n");
+        }
+}
+
+
+void PCM5122_WRITECOMMAND1(uint8_t reg)
+{
+   int ret;
+   ret = X_WrByte1(I2C_NUM_1,0x4C,reg); 
+        if (ret == ESP_FAIL) {
+            printf("I2C Fail\n");
+        }
+}
+
+void(PCM5122_init(void)) {
+    
+   PCM5122_WRITECOMMAND1(0x80);             // Select Page 0
+   PCM5122_WRITECOMMAND(0x81,0x11);         // Select Register 1. Set 'Reset Module' & Set 'Reset Mode Registers'
+    
+   PCM5122_WRITECOMMAND1(0x80);             // Select Page 0
+   PCM5122_WRITECOMMAND(0x81,0x00);         // Select Register 1. Reset 'Reset Module' & Reset 'Reset Mode Registers'
+  
+   PCM5122_WRITECOMMAND1(0x80);             // Select Page 0
+   PCM5122_WRITECOMMAND(0x82,0x10);         // Select register 2. Set 'Standby mode'
+  
+   PCM5122_WRITECOMMAND1(0x80);             // Select Page 0
+   PCM5122_WRITECOMMAND(0x82,0x11);         // Select register 2. Set 'Standby mode' & Set 'Powerdown Request'
+  
+   PCM5122_WRITECOMMAND1(0x80);             // Select Page 0
+   PCM5122_WRITECOMMAND(0xBD,0x3E);         // Select register 61. Attenuation
+  
+   PCM5122_WRITECOMMAND1(0x80);             // Select Page 0
+   PCM5122_WRITECOMMAND(0xBE,0x3E);         // Select register 62. Attenuation
+  
+   PCM5122_WRITECOMMAND1(0x80);             // Select Page 0
+   PCM5122_WRITECOMMAND(0x82,0x10);         // Select register 2. Set 'Standby mode'
+   
+   PCM5122_WRITECOMMAND1(0x80);             // Select Page 0
+   PCM5122_WRITECOMMAND(0xA5,0x08);         // Select register 37. Set 'Ignore SCK Halt Detection'
+    
+   PCM5122_WRITECOMMAND1(0x80);             // Select Page 0
+   PCM5122_WRITECOMMAND(0x8D,0x10);         // Select register 13. Set 'The PLL Reference Clock is BCK'
+   
+   PCM5122_WRITECOMMAND1(0x80);             // Select Page 0
+   PCM5122_WRITECOMMAND(0x82,0x00);         // Select register 2. Reset 'Standby mode' & Reset 'Powerdown Request'
+   
+   PCM5122_WRITECOMMAND1(0x80);             // Select Page 0
+   PCM5122_WRITECOMMAND(0x82,0x10);         // Select register 2. Set 'Standby mode'
+   
+   PCM5122_WRITECOMMAND1(0x80);             // Select Page 0
+   PCM5122_WRITECOMMAND(0x82,0x11);         // Select register 2. Set 'Standby mode' & Set 'Powerdown Request'
+   
+   PCM5122_WRITECOMMAND1(0x80);             // Select Page 0
+   PCM5122_WRITECOMMAND(0x82,0x16);         // Select register 2. Reset 'Standby mode'
+  
+   PCM5122_WRITECOMMAND1(0x80);             // Select Page 0
+   PCM5122_WRITECOMMAND(0x82,0x00);         // Select register 2. Reset 'Standby mode' & Reset 'Powerdown Request'
+  
+  
+
+   
+   
+   PCM5122_WRITECOMMAND1(0x80);             // Select Page 0
+   PCM5122_WRITECOMMAND(0xBD,0x62);         // Select register 61. Attenuation
+  
+   PCM5122_WRITECOMMAND1(0x80);             // Select Page 0
+   PCM5122_WRITECOMMAND(0xBE,0x62);         // Select register 62. Attenuation
+   
+ }
+ 
+static   int VolLevel = 0xBD;           // Set Attenuation to -70dB
+static bool FirstBoot = 1;
+      
+  void ChangeVolume() 
+  // Task for volume setting
+  {
+     for(;;) //infinite loop
+     {          
+          int OldVolume = VolLevel;
+          bool ProcessVolume = 0;
+          
+      
+          
+                if((gpio_get_level(GPIO_NUM_18))&&VolLevel<=254&&ProcessVolume == 0)
+                { 
+
+                            
+                            
+                    VolLevel++;
+                    ProcessVolume = 1;
+
+                }
+                
+                if((gpio_get_level(GPIO_NUM_19))&&VolLevel>=49&&ProcessVolume == 0)
+                {  
+                    VolLevel--;
+                    ProcessVolume = 1;
+
+                    
+                }
+                
+                
+        
+          
+          
+
+          
+          
+          if((OldVolume != VolLevel)||FirstBoot ==1)
+          {
+     
+              
+              char str[15];
+              FirstBoot = 0; 
+              sprintf(str, "Volume: -%d dB          ", ((VolLevel-48)/2));
+              
+              if(VolLevel == 255)
+              {
+                  sprintf(str, "Volume: MUTE            ");
+            }
+            else
+            {
+                sprintf(str, "Volume: -%d dB          ", ((VolLevel-48)/2));
+            }
+    
+    
+                        
+          if(ProcessVolume == 1)
+          {
+            
+          //  printf(str, "Volume: %d dB.\r\n", (((VolLevel-48)/2)*1));
+          
+                
+            PCM5122_WRITECOMMAND1(0x80);             // Select Page 0
+            PCM5122_WRITECOMMAND(0xBD,VolLevel);         // Select register 61. Attenuation
+            
+            PCM5122_WRITECOMMAND1(0x80);             // Select Page 0
+            PCM5122_WRITECOMMAND(0xBE,VolLevel);         // Select register 62. Attenuation
+           }
+           
+           
+             SSD1306_GotoXY(2, 4);
+            SSD1306_Puts(str, &Font_7x10, SSD1306_COLOR_WHITE);
+                
+            SSD1306_UpdateScreen();
+           
+          }
+           
+            vTaskDelay(200/portTICK_RATE_MS);
+           ProcessVolume = 0;
+           
+           
+            
+          
+      }
+    
+}
+
+
+
+ 
 char *init_url(int d) {
   nvs_handle h;
   char index[2] = { '0', '\0' };
@@ -86,6 +253,9 @@ char *init_url(int d) {
   esp_err_t e;
 
   nvs_open(NVSNAME, NVS_READWRITE, &h);
+#if 0
+  nvs_erase_all(h);
+#endif
 
   if (nvs_get_u8(h, key_n, &stno_max) != ESP_OK) {
     stno = 0;
@@ -197,20 +367,72 @@ void erase_nvurl(int n) {
 
 xSemaphoreHandle print_mux;
 
-void i2c_test(void)
+static char *surl = NULL;
+static char ip[16];
+static int x = 0;
+static int l = 0;
+
+#ifdef CONFIG_SSD1306_6432
+#define XOFFSET 31
+#define YOFFSET 32
+#define WIDTH 64
+#define HEIGHT 32
+#else
+#define WIDTH 128
+#define HEIGHT 64
+#define XOFFSET 0
+#define YOFFSET 0
+#endif
+
+void oled_scroll(void) {
+  if (surl == NULL) return;
+  while (l) {
+    vTaskDelay(20/portTICK_RATE_MS);
+  }
+  int w = strlen(surl) * 7;
+  if (w <= WIDTH) return;
+
+#ifdef CONFIG_SSD1306_6432
+  SSD1306_GotoXY(XOFFSET - x, YOFFSET + 10);
+  SSD1306_Puts(surl, &Font_7x10, SSD1306_COLOR_WHITE);
+  SSD1306_GotoXY(XOFFSET - x, YOFFSET + 20);
+  SSD1306_Puts(ip, &Font_7x10, SSD1306_COLOR_WHITE);
+#else
+  SSD1306_GotoXY(2 - x, 37);
+  SSD1306_Puts(surl, &Font_7x10, SSD1306_COLOR_WHITE);
+#endif
+
+  x++;
+  if (x > w) x = -WIDTH;
+  SSD1306_UpdateScreen();
+}
+
+void i2c_test(int mode)
 {
     char *url = get_url(); // play_url();
+    x = 0;
+    surl = url;
 
     SSD1306_Fill(SSD1306_COLOR_BLACK); // clear screen
-
-    SSD1306_GotoXY(40, 4);
-    SSD1306_Puts("ESP32", &Font_11x18, SSD1306_COLOR_WHITE);
+#ifdef CONFIG_SSD1306_6432
+    SSD1306_GotoXY(XOFFSET + 2, YOFFSET); // 31, 32);
+    SSD1306_Puts("ESP32PICO", &Font_7x10, SSD1306_COLOR_WHITE);
+    SSD1306_GotoXY(XOFFSET - x, YOFFSET + 10);
+    SSD1306_Puts(surl, &Font_7x10, SSD1306_COLOR_WHITE);
+    SSD1306_GotoXY(XOFFSET - x, YOFFSET + 20);
+    tcpip_adapter_ip_info_t ip_info;
+    tcpip_adapter_get_ip_info(TCPIP_ADAPTER_IF_STA, &ip_info);
+    strcpy(ip, ip4addr_ntoa(&ip_info.ip));
+    SSD1306_Puts(ip + 3, &Font_7x10, SSD1306_COLOR_WHITE);
+#else
+ //   SSD1306_GotoXY(40, 4);
+//    SSD1306_Puts("ESP32", &Font_11x18, SSD1306_COLOR_WHITE);
     
     SSD1306_GotoXY(2, 20);
 #ifdef CONFIG_BT_SPEAKER_MODE /////bluetooth speaker mode/////
-    SSD1306_Puts("PCM5102 BT speaker", &Font_7x10, SSD1306_COLOR_WHITE);
+    SSD1306_Puts("PCM5122 BT speaker", &Font_7x10, SSD1306_COLOR_WHITE);
     SSD1306_GotoXY(2, 30);
-    SSD1306_Puts("my device name is", &Font_7x10, SSD1306_COLOR_WHITE);
+    SSD1306_Puts("Device name is", &Font_7x10, SSD1306_COLOR_WHITE);
     SSD1306_GotoXY(2, 39);
     SSD1306_Puts(dev_name, &Font_7x10, SSD1306_COLOR_WHITE);
     SSD1306_GotoXY(16, 53);
@@ -218,31 +440,27 @@ void i2c_test(void)
 #else ////////for webradio mode display////////////////
     SSD1306_Puts("PCM5102A webradio", &Font_7x10, SSD1306_COLOR_WHITE);
     SSD1306_GotoXY(2, 30);
-    
-    SSD1306_Puts(url, &Font_7x10, SSD1306_COLOR_WHITE);
-    if (strlen(url) > 18)  {
-      SSD1306_GotoXY(2, 39);
-      SSD1306_Puts(url + 18, &Font_7x10, SSD1306_COLOR_WHITE);
+    if (mode) {
+      SSD1306_Puts("web server is up.", &Font_7x10, SSD1306_COLOR_WHITE);
+    } else {
+      //SSD1306_Puts(url, &Font_7x10, SSD1306_COLOR_WHITE);
+      if (strlen(url) > 18)  {
+	SSD1306_GotoXY(2, 39);
+	//SSD1306_Puts(url + 18, &Font_7x10, SSD1306_COLOR_WHITE);
+      }
+      SSD1306_GotoXY(16, 53);
     }
-    SSD1306_GotoXY(16, 53);
 
     tcpip_adapter_ip_info_t ip_info;
     tcpip_adapter_get_ip_info(TCPIP_ADAPTER_IF_STA, &ip_info);
     SSD1306_GotoXY(2, 53);
     SSD1306_Puts("IP:", &Font_7x10, SSD1306_COLOR_WHITE);
-    SSD1306_Puts(ip4addr_ntoa(&ip_info.ip), &Font_7x10, SSD1306_COLOR_WHITE);    
+    SSD1306_Puts(ip4addr_ntoa(&ip_info.ip), &Font_7x10, SSD1306_COLOR_WHITE);
 #endif
-
+#endif
     /* Update screen, send changes to LCD */
     SSD1306_UpdateScreen();
-    
-/* for class-D amplifier system. Dim OLED to avoid noise from panel*/
-/* PLEASE comment out next three lines for ESP32-ADB system 
-    vTaskDelay(500);
-    SSD1306_Fill(SSD1306_COLOR_BLACK);
-    SSD1306_UpdateScreen();  
-   The above part is for class-D webradio system*/
-    
+
 }
 
 /**
@@ -402,6 +620,8 @@ static void start_wifi()
     ui_queue_event(UI_CONNECTED);
 }
 
+static void http_server(void *pvParameters);
+
 static renderer_config_t *create_renderer_config()
 {
     renderer_config_t *renderer_config = calloc(1, sizeof(renderer_config_t));
@@ -448,6 +668,12 @@ static void start_web_radio()
     }
 
     radio_config->url = get_url(); // play_url(); /* PLAY_URL; */
+
+    xTaskCreate(&http_server, "http_server", 2048, NULL, 5, NULL);
+    if (gpio_get_level(GPIO_NUM_0) == 0) {
+      while (1) 
+        vTaskDelay(200/portTICK_RATE_MS);
+    }
 
     // start radio
     web_radio_init(radio_config);
@@ -540,7 +766,7 @@ http_server_netconn_serve(struct netconn *conn)
         get_nvurl(i, buf, length);
         if (i == stno) netconn_write(conn, "<b>", 3, NETCONN_NOCOPY);
         netconn_write(conn, buf, strlen(buf), NETCONN_NOCOPY);
-        if (i == stno) netconn_write(conn, "</b> - now playing", 24, NETCONN_NOCOPY);
+        if (i == stno) netconn_write(conn, "</b> - now playing", 18, NETCONN_NOCOPY);
         netconn_write(conn, "</a></li>", 9, NETCONN_NOCOPY);
       }
       netconn_write(conn, http_e, sizeof(http_e)-1, NETCONN_NOCOPY);
@@ -592,16 +818,42 @@ void app_main()
 
 #ifdef CONFIG_BT_SPEAKER_MODE
     bt_speaker_start(create_renderer_config());
+      i2c_example_master_init();
+    PCM5122_init();     // DAC
+    SSD1306_Init();
+      i2c_test(1);
+    ChangeVolume(0,0);
+    
 #else
     start_wifi();
-    start_web_radio();
-#endif
     i2c_example_master_init();
+      PCM5122_init();     // DAC
     SSD1306_Init();
-    i2c_test();
+    i2c_test(1);
+
+    start_web_radio();
+
+    i2c_test(0);
+    
+ 
+#endif
     ESP_LOGI(TAG, "RAM left %d", esp_get_free_heap_size());
+
+    // ESP_LOGI(TAG, "app_main stack: %d\n", uxTaskGetStackHighWaterMark(NULL));
+    while (1) {
+      vTaskDelay(40/portTICK_RATE_MS);
+//#ifdef CONFIG_SSD1306_6432
+      oled_scroll();
+//#endif
+    }
+
     
 #ifndef CONFIG_BT_SPEAKER_MODE // Y.H.Cha : Add this to run in Web radio mode only
 xTaskCreate(&http_server, "http_server", 2048, NULL, 5, NULL);
 #endif
+
+
+xTaskCreate(&ChangeVolume, "ChangeVolume", 2048, NULL, 5, NULL);
+
+
 }

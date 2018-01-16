@@ -1,20 +1,23 @@
-Station switch is changed from GPIO0 to GPIO16 for ESP32-ADB. General ESP32 developing board has GPIO0 switch so if your board has one, please change it in components/controls/controls.c
 
-----
 Modified for multi URL support by n24bass
+(merged several new functions, URL scrolling!)
 
-Add web interface.
+## For the boards with ESP32-PICO-D4, please swap control switch from GPIO16 to GPIO0, since GPIO16 in PICO-D4 is used for internal SPI Flash RAM connection (pre-occupied). Swap can be done in components/controls/controls.c
+
+Add web interface. You can add (up to 10), change or remove URL of the internet radio station. 
 
 ```
-http://address_of_ESP32/  - list stations
-http://address_of_ESP32/P - change to previous station
-http://address_of_ESP32/N - change to next station
-http://address_of_ESP32/[0..9] - select station
-http://address_of_ESP32/[0..]+URL - set station URL
-http://address_of_ESP32/[0..]-URL - remove station URL
+GET /  - list stations
+GET /P - change to previous station
+GET /N - change to next station
+GET /0..9 - select station
+GET /0..9+URL - set station URL
+GET /0..-URL - remove station URL
 ```
 
-Push 'boot' switch to change next station.
+Push 'GPIO-16' (chaned from 'boot') switch to change next station.
+
+It starts up only web interface when GPIO-16 is keeped low level at boot time.
 
 ----
 

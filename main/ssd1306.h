@@ -18,7 +18,7 @@
 /* SSD1306 settings */
 /* SSD1306 width in pixels */
 #ifndef SSD1306_WIDTH
-#define SSD1306_WIDTH            128//132
+#define SSD1306_WIDTH            132
 #endif
 /* SSD1306 LCD height in pixels */
 #ifndef SSD1306_HEIGHT
@@ -75,7 +75,7 @@ void SSD1306_Fill(SSD1306_COLOR_t Color);
  * @param  color: Color to be used for screen fill. This parameter can be a value of @ref SSD1306_COLOR_t enumeration
  * @retval None
  */
-void SSD1306_DrawPixel(uint16_t x, uint16_t y, SSD1306_COLOR_t color);
+void SSD1306_DrawPixel(int16_t x, int16_t y, SSD1306_COLOR_t color);
 
 /**
  * @brief  Sets cursor pointer to desired location for strings
@@ -83,7 +83,7 @@ void SSD1306_DrawPixel(uint16_t x, uint16_t y, SSD1306_COLOR_t color);
  * @param  y: Y location. This parameter can be a value between 0 and SSD1306_HEIGHT - 1
  * @retval None
  */
-void SSD1306_GotoXY(uint16_t x, uint16_t y);
+void SSD1306_GotoXY(int16_t x, int16_t y);
 
 /**
  * @brief  Puts character to internal RAM
