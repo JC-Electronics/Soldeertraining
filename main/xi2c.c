@@ -40,22 +40,6 @@ esp_err_t X_WrByte1(i2c_port_t i2c_num, uint8_t i2c_add, uint8_t data_wr) {
     return ret;
 }
 
-esp_err_t PCMVOLUME(i2c_port_t i2c_num, uint8_t i2c_add, uint8_t attl, uint8_t attr) {
-
-    uint8_t XI2CBufferReg[512];
-    uint8_t XI2CBufferAtt[512];
-    XI2CBufferReg[0] = 0x80;
-    //XI2CBuffer[1] = 0x00;
-    //XI2CBuffer[2] = i2c_add;
-    XI2CBufferAtt[0] = 0xBD;
-    XI2CBufferAtt[1] = attl;
-    XI2CBufferAtt[2] = 0xBE;
-    XI2CBufferAtt[3] = attr;
-    esp_err_t ret = XI2CWrite(i2c_num, i2c_add, XI2CBufferReg, 0x1);
-    esp_err_t ret2 = XI2CWrite(i2c_num, i2c_add, XI2CBufferAtt, 0x4);
-    return ret;
-}
-
 esp_err_t X_WriteMulti(i2c_port_t i2c_num, uint8_t i2c_add, uint8_t index, uint32_t count, uint8_t* data_wr) {
   if (count > sizeof(XI2CBuffer) - 1) {
       return ESP_FAIL;
@@ -161,20 +145,6 @@ esp_err_t X_WrDWord(i2c_port_t i2c_num, uint8_t i2c_add, uint8_t index, uint8_t 
 
 }
 
-/*X_Error X_UpdateByte(SensorsData Dev, uint8_t index, uint8_t AndData, uint8_t OrData) {
-    X_Error Status = X_ERROR_NONE;
-    uint8_t data;
-
-    Status = X_RdByte(Dev, index, &data);
-    if (Status == 0) {
-        goto done;
-    }
-    data = (data & AndData) | OrData;
-    Status = X_WrByte(Dev, index, data);
-done:
-    return Status;
-}*/
-
 esp_err_t X_RdBit(i2c_port_t i2c_num, uint8_t i2c_add, uint8_t index, uint8_t bitNum, uint8_t *data_rd) {
 
    uint8_t b;
@@ -243,4 +213,33 @@ esp_err_t X_PollingDelay(void) {
   ret = ESP_OK;
   return ret;
 
+}
+
+// Added functions for easy writing to the PCM5122
+
+esp_err_t PCMVOLUME(i2c_port_t i2c_num, uint8_t i2c_add, uint8_t attl, uint8_t attr) {
+
+    uint8_t XI2CBufferPage[512];
+    uint8_t XI2CBufferAtt[512];
+    XI2CBufferPage[0] = 0x80;
+    XI2CBufferAtt[0] = 0xBD;
+    XI2CBufferAtt[1] = attl;
+    XI2CBufferAtt[2] = 0xBE;
+    XI2CBufferAtt[3] = attr;
+    esp_err_t ret = XI2CWrite(i2c_num, i2c_add, XI2CBufferPage, 0x1);
+    esp_err_t ret2 = XI2CWrite(i2c_num, i2c_add, XI2CBufferAtt, 0x4);
+    return ret;
+}
+
+esp_err_t PCMCONTROL(i2c_port_t i2c_num, uint8_t i2c_add, uint8_t page, uint8_t reg, uint8_t data) {
+    
+    uint8_t XI2CBufferPage[512];
+    uint8_t XI2CBufferRegData[512];
+    
+    XI2CBufferPage[0] = page;
+    XI2CBufferRegData[0] = reg;
+    XI2CBufferRegData[1] = data;
+    esp_err_t ret = XI2CWrite(i2c_num, i2c_add, XI2CBufferPage, 0x1);
+    esp_err_t ret2 = XI2CWrite(i2c_num, i2c_add, XI2CBufferRegData, 0x2);
+    return ret;
 }

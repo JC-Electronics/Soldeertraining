@@ -32,7 +32,6 @@
 
 #include "bt_config.h"
 #include "driver/gpio.h"
-//#include "driver/i2c.h"
 #include "xi2c.h"
 #include "fonts.h"
 #include "ssd1306.h"
@@ -49,13 +48,12 @@ static const char* TAG = "Touch pad";
 static bool s_pad_activated[TOUCH_PAD_MAX];
 static uint32_t s_pad_init_val[TOUCH_PAD_MAX];
 
-#define I2C_EXAMPLE_MASTER_SCL_IO 32  //*!< gpio number for I2C master clock */////////////
-#define I2C_EXAMPLE_MASTER_SDA_IO 33  //*!< gpio number for I2C master data  *//////////////
-#define I2C_EXAMPLE_MASTER_NUM I2C_NUM_1   /*!< I2C port number for master dev */
-#define I2C_EXAMPLE_MASTER_TX_BUF_DISABLE   0   /*!< I2C master do not need buffer */
-#define I2C_EXAMPLE_MASTER_RX_BUF_DISABLE   0   /*!< I2C master do not need buffer */
-//#define I2C_EXAMPLE_MASTER_FREQ_HZ    100000     /*!< I2C master clock frequency */
-#define I2C_EXAMPLE_MASTER_FREQ_HZ    400000     /*!< I2C master clock frequency */
+#define I2C_EXAMPLE_MASTER_SCL_IO 32		  	/*!< gpio number for I2C master clock */
+#define I2C_EXAMPLE_MASTER_SDA_IO 33			/*!< gpio number for I2C master data  */
+#define I2C_EXAMPLE_MASTER_NUM I2C_NUM_1   		/*!< I2C port number for master dev	  */
+#define I2C_EXAMPLE_MASTER_TX_BUF_DISABLE   0   /*!< I2C master do not need buffer 	  */
+#define I2C_EXAMPLE_MASTER_RX_BUF_DISABLE   0   /*!< I2C master do not need buffer    */
+#define I2C_EXAMPLE_MASTER_FREQ_HZ    400000    /*!< I2C master clock frequency 	  */
 
 const static char http_html_hdr[] = "HTTP/1.1 200 OK\r\nContent-type: text/html\r\n\r\n";
 
@@ -102,56 +100,22 @@ void PCM5122_WRITECOMMAND1(uint8_t reg)
 void(PCM5122_init(void)) {
 #define TAG "DAC"
 	ESP_LOGI(TAG,"Initializing PCM5122 DAC");
-
-   PCM5122_WRITECOMMAND1(0x80);             // Select Page 0
-   PCM5122_WRITECOMMAND(0x81,0x11);         // Select Register 1. Set 'Reset Module' & Set 'Reset Mode Registers'
-
-   PCM5122_WRITECOMMAND1(0x80);             // Select Page 0
-   PCM5122_WRITECOMMAND(0x81,0x00);         // Select Register 1. Reset 'Reset Module' & Reset 'Reset Mode Registers'
-
-   PCM5122_WRITECOMMAND1(0x80);             // Select Page 0
-   PCM5122_WRITECOMMAND(0x82,0x10);         // Select register 2. Set 'Standby mode'
-
-   PCM5122_WRITECOMMAND1(0x80);             // Select Page 0
-   PCM5122_WRITECOMMAND(0x82,0x11);         // Select register 2. Set 'Standby mode' & Set 'Powerdown Request'
-
-   PCM5122_WRITECOMMAND1(0x80);             // Select Page 0
-   PCM5122_WRITECOMMAND(0xBD,0x3E);         // Select register 61. Attenuation
-
-   PCM5122_WRITECOMMAND1(0x80);             // Select Page 0
-   PCM5122_WRITECOMMAND(0xBE,0x3E);         // Select register 62. Attenuation
-
-   PCM5122_WRITECOMMAND1(0x80);             // Select Page 0
-   PCM5122_WRITECOMMAND(0x82,0x10);         // Select register 2. Set 'Standby mode'
-
-   PCM5122_WRITECOMMAND1(0x80);             // Select Page 0
-   PCM5122_WRITECOMMAND(0xA5,0x08);         // Select register 37. Set 'Ignore SCK Halt Detection'
-
-   PCM5122_WRITECOMMAND1(0x80);             // Select Page 0
-   PCM5122_WRITECOMMAND(0x8D,0x10);         // Select register 13. Set 'The PLL Reference Clock is BCK'
-
-   PCM5122_WRITECOMMAND1(0x80);             // Select Page 0
-   PCM5122_WRITECOMMAND(0x82,0x00);         // Select register 2. Reset 'Standby mode' & Reset 'Powerdown Request'
-
-   PCM5122_WRITECOMMAND1(0x80);             // Select Page 0
-   PCM5122_WRITECOMMAND(0x82,0x10);         // Select register 2. Set 'Standby mode'
-
-   PCM5122_WRITECOMMAND1(0x80);             // Select Page 0
-   PCM5122_WRITECOMMAND(0x82,0x11);         // Select register 2. Set 'Standby mode' & Set 'Powerdown Request'
-
-   PCM5122_WRITECOMMAND1(0x80);             // Select Page 0
-   PCM5122_WRITECOMMAND(0x82,0x16);         // Select register 2. Reset 'Standby mode'
-
-   PCM5122_WRITECOMMAND1(0x80);             // Select Page 0
-   PCM5122_WRITECOMMAND(0x82,0x00);         // Select register 2. Reset 'Standby mode' & Reset 'Powerdown Request'
-
-   PCM5122_WRITECOMMAND1(0x80);             // Select Page 0
-   PCM5122_WRITECOMMAND(0xBD,0x80);         // Select register 61. Attenuation to -70dB
-
-   PCM5122_WRITECOMMAND1(0x80);             // Select Page 0
-   PCM5122_WRITECOMMAND(0xBE,0x80);         // Select register 62. Attenuation to -70dB
-   
- }
+	PCMCONTROL(I2C_NUM_1,0x4C,0x80,0x81,0x11);	// Select Page 0, Register 01. Set 'Reset Module' & Set 'Reset Mode Registers'
+	PCMCONTROL(I2C_NUM_1,0x4C,0x80,0x81,0x00);	// Select Page 0, Register 01. Reset 'Reset Module' & Reset 'Reset Mode Registers'
+	PCMCONTROL(I2C_NUM_1,0x4C,0x80,0x82,0x10);	// Select Page 0, Register 02. Set 'Standby mode'
+	PCMCONTROL(I2C_NUM_1,0x4C,0x80,0x82,0x11);	// Select Page 0, Register 02. Set 'Standby mode' & Set 'Powerdown Request'
+	PCMCONTROL(I2C_NUM_1,0x4C,0x80,0xBD,0x3E);	// Select Page 0, Register 61. Set Attenuation
+	PCMCONTROL(I2C_NUM_1,0x4C,0x80,0xBE,0x3E);	// Select Page 0, Register 62. Set Attenuation
+	PCMCONTROL(I2C_NUM_1,0x4C,0x80,0x82,0x10);	// Select Page 0, Register 02. Set 'Standby mode'
+	PCMCONTROL(I2C_NUM_1,0x4C,0x80,0xA5,0x08);	// Select Page 0, Register 37. Set 'Ignore SCK Halt Detection'
+	PCMCONTROL(I2C_NUM_1,0x4C,0x80,0x8D,0x10);	// Select Page 0, Register 13. Set 'The PLL Reference Clock is BCK'
+	PCMCONTROL(I2C_NUM_1,0x4C,0x80,0x82,0x00);	// Select Page 0, Register 02. Reset 'Standby mode' & Reset 'Powerdown Request'
+	PCMCONTROL(I2C_NUM_1,0x4C,0x80,0x82,0x10);	// Select Page 0, Register 02. Set 'Standby mode'
+	PCMCONTROL(I2C_NUM_1,0x4C,0x80,0x82,0x11);	// Select Page 0, Register 02. Set 'Standby mode' & Set 'Powerdown Request'
+	PCMCONTROL(I2C_NUM_1,0x4C,0x80,0x82,0x16);	// Select Page 0, Register 02. Reset 'Standby mode'
+	PCMCONTROL(I2C_NUM_1,0x4C,0x80,0x82,0x00);	// Select Page 0, Register 02. Reset 'Standby mode' & Reset 'Powerdown Request'
+	PCMVOLUME(I2C_NUM_1,0x4C,0x80,0x80);		// Set Attenuation to -70dB
+}
 
 // Default volume level
 static int VolLevel = 0x80;           // Set Attenuation to -70dB (0xBC)
@@ -249,6 +213,9 @@ static int VolLevel = 0x80;           // Set Attenuation to -70dB (0xBC)
     The difference caused by a 'touch' action could be very small, but we can still use
     filter mode to detect a 'touch' event.
    */
+  static bool Muted;
+  static bool WasMuted;
+
   static void tp_example_read_task(void *pvParameter)
   {
 
@@ -267,7 +234,14 @@ static int VolLevel = 0x80;           // Set Attenuation to -70dB (0xBC)
 		  //interrupt mode, enable touch interrupt
 		  touch_pad_intr_enable();
 
-		  if (s_pad_activated[4] == true) { ESP_LOGI(TAG, "T%d activated!", 4); vTaskDelay(200 / portTICK_PERIOD_MS); s_pad_activated[4] = false;}	// Not yet assigned
+		  if (s_pad_activated[4] == true)
+		  {
+			  ESP_LOGI(TAG, "T%d activated!", 4);
+			  vTaskDelay(200 / portTICK_PERIOD_MS);
+			  s_pad_activated[4] = false;
+			  Muted =! Muted;
+		  }
+
 		  if (s_pad_activated[5] == true) { ESP_LOGI(TAG, "T%d activated!", 5); vTaskDelay(200 / portTICK_PERIOD_MS); s_pad_activated[5] = false;}	// Not yet assigned
 		  if (s_pad_activated[6] == true) { ESP_LOGI(TAG, "T%d activated!", 6); vTaskDelay(200 / portTICK_PERIOD_MS); s_pad_activated[6] = false;}	// Not yet assigned
 
@@ -281,9 +255,9 @@ static int VolLevel = 0x80;           // Set Attenuation to -70dB (0xBC)
 			  // Reset the counter triggering a message
 			  // that application is running
 			  show_message = 1;
-			  if(VolLevel<=49)
+			  if(VolLevel<=49 || Muted)
 			  {
-				  ESP_LOGI(TAG,"Min. Volume reached (%d)",VolLevel);
+				  ESP_LOGI(TAG,"Min. Volume reached (%d) or muted.",VolLevel);
 			  }
 			  else
 			  {
@@ -305,9 +279,9 @@ static int VolLevel = 0x80;           // Set Attenuation to -70dB (0xBC)
 			  // that application is running
 			  show_message = 1;
 
-			  if(VolLevel>=254)
+			  if(VolLevel>=254 || Muted)
 			  {
-				  ESP_LOGI(TAG,"Max. Volume reached (%d)",VolLevel);
+				  ESP_LOGI(TAG,"Max. Volume reached (%d) or muted.",VolLevel);
 			  }
 			  else
 			  {
@@ -317,7 +291,20 @@ static int VolLevel = 0x80;           // Set Attenuation to -70dB (0xBC)
 			  }
 		  }
 
-		  if(ProcessVolume == 1)
+if(Muted)
+		  {
+			  int ret;
+			  ret = PCMVOLUME(I2C_NUM_1,0x4C,0xff,0xff);
+			  if (ret == ESP_FAIL) {
+				  printf("I2C Fail\n");
+			  }
+			  WasMuted = 1;
+			  vTaskDelay(100 / portTICK_PERIOD_MS);
+		  }
+		  else
+		  {
+
+		  if(ProcessVolume == 1 || WasMuted == 1)
 		  {
 			  int ret;
 			  ret = PCMVOLUME(I2C_NUM_1,0x4C,VolLevel,VolLevel);
@@ -326,8 +313,9 @@ static int VolLevel = 0x80;           // Set Attenuation to -70dB (0xBC)
 			  }
 			  vTaskDelay(100 / portTICK_PERIOD_MS);
 			  ProcessVolume = 0;
+			  WasMuted = 0;
 		  }
-
+		  }
 		  vTaskDelay(10 / portTICK_PERIOD_MS);
 
 		  // If no pad is touched, every couple of seconds, show a message
@@ -478,12 +466,22 @@ static int l = 0;
 
 void oled_scroll(void) {
 	// Show volume level
+	if(Muted)
+	{
+		SSD1306_GotoXY(2, 4);
+		SSD1306_Puts("Volume: Mute       ", &Font_7x10, SSD1306_COLOR_WHITE);
+		  SSD1306_UpdateScreen();
+	}
+	else
+	{
+
+
 	  char str[15];
 	  sprintf(str, "Volume: -%d dB               ", ((VolLevel-48)/2));
 	SSD1306_GotoXY(2, 4);
 	SSD1306_Puts(str, &Font_7x10, SSD1306_COLOR_WHITE);
 	  SSD1306_UpdateScreen();
-
+	}
 
   if (surl == NULL) return;
   while (l) {
