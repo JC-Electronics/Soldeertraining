@@ -218,7 +218,7 @@ esp_err_t X_PollingDelay(void) {
 // Added functions for easy writing to the PCM5122
 
 esp_err_t PCMVOLUME(i2c_port_t i2c_num, uint8_t i2c_add, uint8_t attl, uint8_t attr) {
-
+// Functie werkt niet.
     uint8_t XI2CBufferPage[512];
     uint8_t XI2CBufferAtt[512];
     XI2CBufferPage[0] = 0x80;

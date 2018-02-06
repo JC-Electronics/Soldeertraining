@@ -114,7 +114,13 @@ void(PCM5122_init(void)) {
 	PCMCONTROL(I2C_NUM_1,0x4C,0x80,0x82,0x11);	// Select Page 0, Register 02. Set 'Standby mode' & Set 'Powerdown Request'
 	PCMCONTROL(I2C_NUM_1,0x4C,0x80,0x82,0x16);	// Select Page 0, Register 02. Reset 'Standby mode'
 	PCMCONTROL(I2C_NUM_1,0x4C,0x80,0x82,0x00);	// Select Page 0, Register 02. Reset 'Standby mode' & Reset 'Powerdown Request'
-	PCMVOLUME(I2C_NUM_1,0x4C,0x80,0x80);		// Set Attenuation to -70dB
+//	PCMVOLUME(I2C_NUM_1,0x4C,0x80,0x80);		// Set Attenuation to -70dB
+
+	PCMCONTROL(I2C_NUM_1,0x4C,0x80,0xBD,0x80);	// Select Page 0, Register 02. Reset 'Standby mode'
+	PCMCONTROL(I2C_NUM_1,0x4C,0x80,0xBE,0x80);	// Select Page 0, Register 02. Reset 'Standby mode' & Reset 'Powerdown Request'
+    
+    
+    
 }
 
 // Default volume level
@@ -257,7 +263,7 @@ static int VolLevel = 0x80;           // Set Attenuation to -70dB (0xBC)
 			  show_message = 1;
 			  if(VolLevel<=49 || Muted)
 			  {
-				  ESP_LOGI(TAG,"Min. Volume reached (%d) or muted.",VolLevel);
+				  ESP_LOGI(TAG,"Max. Volume reached (%d) or muted.",VolLevel);
 			  }
 			  else
 			  {
@@ -281,7 +287,7 @@ static int VolLevel = 0x80;           // Set Attenuation to -70dB (0xBC)
 
 			  if(VolLevel>=254 || Muted)
 			  {
-				  ESP_LOGI(TAG,"Max. Volume reached (%d) or muted.",VolLevel);
+				  ESP_LOGI(TAG,"Min. Volume reached (%d) or muted.",VolLevel);
 			  }
 			  else
 			  {
@@ -293,11 +299,13 @@ static int VolLevel = 0x80;           // Set Attenuation to -70dB (0xBC)
 
 if(Muted)
 		  {
-			  int ret;
-			  ret = PCMVOLUME(I2C_NUM_1,0x4C,0xff,0xff);
-			  if (ret == ESP_FAIL) {
-				  printf("I2C Fail\n");
-			  }
+			  //int ret;
+              PCMCONTROL(I2C_NUM_1,0x4C,0x80,0xBD,0xff);	// Select Page 0, Register BD.
+              PCMCONTROL(I2C_NUM_1,0x4C,0x80,0xBE,0xff);	// Select Page 0, Register BE.
+			  //ret = PCMVOLUME(I2C_NUM_1,0x4C,0xff,0xff);
+			  //if (ret == ESP_FAIL) {
+			//	  printf("I2C Fail\n");
+			 // }
 			  WasMuted = 1;
 			  vTaskDelay(100 / portTICK_PERIOD_MS);
 		  }
@@ -306,11 +314,15 @@ if(Muted)
 
 		  if(ProcessVolume == 1 || WasMuted == 1)
 		  {
-			  int ret;
-			  ret = PCMVOLUME(I2C_NUM_1,0x4C,VolLevel,VolLevel);
-			  if (ret == ESP_FAIL) {
-				  printf("I2C Fail\n");
-			  }
+		//	  int ret;
+			  //ret = PCMVOLUME(I2C_NUM_1,0x4C,VolLevel,VolLevel);
+              
+              PCMCONTROL(I2C_NUM_1,0x4C,0x80,0xBD,VolLevel);	// Select Page 0, Register BD.
+              PCMCONTROL(I2C_NUM_1,0x4C,0x80,0xBE,VolLevel);	// Select Page 0, Register BE.
+              
+		//	  if (ret == ESP_FAIL) {
+		//		  printf("I2C Fail\n");
+		//	  }
 			  vTaskDelay(100 / portTICK_PERIOD_MS);
 			  ProcessVolume = 0;
 			  WasMuted = 0;
