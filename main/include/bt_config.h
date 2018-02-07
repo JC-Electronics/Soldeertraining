@@ -1,2 +1,2 @@
 /* BT device name */
-#define dev_name  "JC-E_BT_SPEAKER"
+#define CONFIG_BT_NAME "JC-E_BT_SPEAKER"

@@ -908,7 +908,35 @@ void app_main()
     PCM5122_init();     // DAC
     SSD1306_Init();		// OLED
       i2c_test(1);
-    ChangeVolume(0,0);
+ //   ChangeVolume(0,0);
+	i2c_test(0);
+
+//xTaskCreate(&ChangeVolume, "ChangeVolume", 2048, NULL, 5, NULL);
+// Initialize touch pad peripheral, it will start a timer to run a filter
+ESP_LOGI(TAG, "Initializing touch pad");
+touch_pad_init();
+
+// Initialize and start a software filter to detect slight change of capacitance.
+touch_pad_filter_start(10);
+// Set measuring time and sleep time
+// In this case, measurement will sustain 0xffff / 8MHz = 8.19ms
+// Meanwhile, sleep time between two measurement will be 0x1000 / 150kHz = 27.3 ms
+touch_pad_set_meas_time(0x1000, 0xffff);
+
+//set reference voltage for charging/discharging
+// In this case, the high reference voltage will be 2.4V - 1.5V = 0.9V
+// The low reference voltage will be 0.8V, so that the procedure of charging
+// and discharging would be very fast.
+touch_pad_set_voltage(TOUCH_HVOLT_2V4, TOUCH_LVOLT_0V8, TOUCH_HVOLT_ATTEN_1V5);
+// Init touch pad IO
+tp_example_touch_pad_init();
+// Set threshhold
+tp_example_set_thresholds();
+// Register touch interrupt ISR
+touch_pad_isr_register(tp_example_rtc_intr, NULL);
+
+// Start a task to show what pads have been touched
+xTaskCreate(&tp_example_read_task, "touch_pad_read_task", 2048, NULL, 5, NULL);
     
 #else
     start_wifi();
