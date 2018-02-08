@@ -94,8 +94,18 @@ void(PCM5122_init(void)) {
 	PCMCONTROL(I2C_NUM_1,0x4C,0x80,0x82,0x11);	// Select Page 0, Register 02. Set 'Standby mode' & Set 'Powerdown Request'
 	PCMCONTROL(I2C_NUM_1,0x4C,0x80,0x82,0x16);	// Select Page 0, Register 02. Reset 'Standby mode'
 	PCMCONTROL(I2C_NUM_1,0x4C,0x80,0x82,0x00);	// Select Page 0, Register 02. Reset 'Standby mode' & Reset 'Powerdown Request'
+<<<<<<< HEAD
 	PCMCONTROL(I2C_NUM_1,0x4C,0x80,0xBD,0x80);	// Select Page 0, Register 61. Set Attenuation
 	PCMCONTROL(I2C_NUM_1,0x4C,0x80,0xBE,0x80);	// Select Page 0, Register 62. Set Attenuation
+=======
+//	PCMVOLUME(I2C_NUM_1,0x4C,0x80,0x80);		// Set Attenuation to -70dB
+
+	PCMCONTROL(I2C_NUM_1,0x4C,0x80,0xBD,0x80);	// Select Page 0, Register 02. Reset 'Standby mode'
+	PCMCONTROL(I2C_NUM_1,0x4C,0x80,0xBE,0x80);	// Select Page 0, Register 02. Reset 'Standby mode' & Reset 'Powerdown Request'
+    
+    
+    
+>>>>>>> 0486c15cefa4a57adafa9ed2ea1b5fb19ac639b4
 }
 
 // Default volume level
@@ -258,7 +268,11 @@ static int VolLevel = 0x80;           // Set Attenuation to -70dB (0xBC)
 
 			  if(VolLevel>=254)
 			  {
+<<<<<<< HEAD
 				  ESP_LOGI(TAG,"Min. Volume reached (%d).",VolLevel);
+=======
+				  ESP_LOGI(TAG,"Min. Volume reached (%d) or muted.",VolLevel);
+>>>>>>> 0486c15cefa4a57adafa9ed2ea1b5fb19ac639b4
 			  }
 			  else
 			  {
@@ -268,6 +282,7 @@ static int VolLevel = 0x80;           // Set Attenuation to -70dB (0xBC)
 			  }
 		  }
 
+<<<<<<< HEAD
 		if(Muted)
 			  {
 				  PCMCONTROL(I2C_NUM_1,0x4C,0x80,0xBD,0xff);	// Select Page 0, Register BD.
@@ -286,6 +301,38 @@ static int VolLevel = 0x80;           // Set Attenuation to -70dB (0xBC)
 				  ProcessVolume = 0;
 				  WasMuted = 0;
 			  }
+=======
+if(Muted)
+		  {
+			  //int ret;
+              PCMCONTROL(I2C_NUM_1,0x4C,0x80,0xBD,0xff);	// Select Page 0, Register BD.
+              PCMCONTROL(I2C_NUM_1,0x4C,0x80,0xBE,0xff);	// Select Page 0, Register BE.
+			  //ret = PCMVOLUME(I2C_NUM_1,0x4C,0xff,0xff);
+			  //if (ret == ESP_FAIL) {
+			//	  printf("I2C Fail\n");
+			 // }
+			  WasMuted = 1;
+			  vTaskDelay(100 / portTICK_PERIOD_MS);
+		  }
+		  else
+		  {
+
+		  if(ProcessVolume == 1 || WasMuted == 1)
+		  {
+		//	  int ret;
+			  //ret = PCMVOLUME(I2C_NUM_1,0x4C,VolLevel,VolLevel);
+              
+              PCMCONTROL(I2C_NUM_1,0x4C,0x80,0xBD,VolLevel);	// Select Page 0, Register BD.
+              PCMCONTROL(I2C_NUM_1,0x4C,0x80,0xBE,VolLevel);	// Select Page 0, Register BE.
+              
+		//	  if (ret == ESP_FAIL) {
+		//		  printf("I2C Fail\n");
+		//	  }
+			  vTaskDelay(100 / portTICK_PERIOD_MS);
+			  ProcessVolume = 0;
+			  WasMuted = 0;
+		  }
+>>>>>>> 0486c15cefa4a57adafa9ed2ea1b5fb19ac639b4
 		  }
 		  vTaskDelay(10 / portTICK_PERIOD_MS);
 
