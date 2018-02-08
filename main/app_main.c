@@ -76,29 +76,9 @@ static char sturl[MAXURLLEN]; // current station URL
 static const char *key_i = "i";
 static const char *key_n = "n";
 
-// Write command for PCM5122 DAC (Writes 2 bytes)
-void PCM5122_WRITECOMMAND(uint8_t reg, uint8_t command)
-{
-  int ret;
-   ret = X_WrByte(I2C_NUM_1,0x4C,reg,command); 
-        if (ret == ESP_FAIL) {
-            printf("I2C Fail\n");
-        }
-}
-
-// Write command for PCM5122 DAC (writes 1 byte)
-void PCM5122_WRITECOMMAND1(uint8_t reg)
-{
-   int ret;
-   ret = X_WrByte1(I2C_NUM_1,0x4C,reg); 
-        if (ret == ESP_FAIL) {
-            printf("I2C Fail\n");
-        }
-}
-
 // PCM5122 DAC Initialization
 void(PCM5122_init(void)) {
-#define TAG "DAC"
+//#define TAG "DAC"
 	ESP_LOGI(TAG,"Initializing PCM5122 DAC");
 	PCMCONTROL(I2C_NUM_1,0x4C,0x80,0x81,0x11);	// Select Page 0, Register 01. Set 'Reset Module' & Set 'Reset Mode Registers'
 	PCMCONTROL(I2C_NUM_1,0x4C,0x80,0x81,0x00);	// Select Page 0, Register 01. Reset 'Reset Module' & Reset 'Reset Mode Registers'
@@ -114,12 +94,12 @@ void(PCM5122_init(void)) {
 	PCMCONTROL(I2C_NUM_1,0x4C,0x80,0x82,0x11);	// Select Page 0, Register 02. Set 'Standby mode' & Set 'Powerdown Request'
 	PCMCONTROL(I2C_NUM_1,0x4C,0x80,0x82,0x16);	// Select Page 0, Register 02. Reset 'Standby mode'
 	PCMCONTROL(I2C_NUM_1,0x4C,0x80,0x82,0x00);	// Select Page 0, Register 02. Reset 'Standby mode' & Reset 'Powerdown Request'
-	PCMVOLUME(I2C_NUM_1,0x4C,0x80,0x80);		// Set Attenuation to -70dB
+	PCMCONTROL(I2C_NUM_1,0x4C,0x80,0xBD,0x80);	// Select Page 0, Register 61. Set Attenuation
+	PCMCONTROL(I2C_NUM_1,0x4C,0x80,0xBE,0x80);	// Select Page 0, Register 62. Set Attenuation
 }
 
 // Default volume level
 static int VolLevel = 0x80;           // Set Attenuation to -70dB (0xBC)
-
 
   /*
     Handle an interrupt triggered when a pad is touched.
@@ -167,29 +147,27 @@ static int VolLevel = 0x80;           // Set Attenuation to -70dB (0xBC)
   	  uint16_t touch_value;
   	  vTaskDelay(500/portTICK_PERIOD_MS);
 
-
-
-	    touch_pad_read_filtered(TOUCH_PAD_NUM0, &touch_value);
+	  touch_pad_read_filtered(TOUCH_PAD_NUM0, &touch_value);
       s_pad_init_val[TOUCH_PAD_NUM0] = touch_value;
       ESP_LOGI(TAG, "test init touch val: %d\n", touch_value);
       ESP_ERROR_CHECK(touch_pad_set_thresh(TOUCH_PAD_NUM0, touch_value * 2 / 3));
 
-		touch_pad_read_filtered(TOUCH_PAD_NUM3, &touch_value);
+	  touch_pad_read_filtered(TOUCH_PAD_NUM3, &touch_value);
       s_pad_init_val[TOUCH_PAD_NUM3] = touch_value;
       ESP_LOGI(TAG, "test init touch val: %d\n", touch_value);
       ESP_ERROR_CHECK(touch_pad_set_thresh(TOUCH_PAD_NUM3, touch_value * 2 / 3));
 
-		touch_pad_read_filtered(TOUCH_PAD_NUM4, &touch_value);
+	  touch_pad_read_filtered(TOUCH_PAD_NUM4, &touch_value);
       s_pad_init_val[TOUCH_PAD_NUM4] = touch_value;
       ESP_LOGI(TAG, "test init touch val: %d\n", touch_value);
       ESP_ERROR_CHECK(touch_pad_set_thresh(TOUCH_PAD_NUM4, touch_value * 2 / 3));
 
-		touch_pad_read_filtered(TOUCH_PAD_NUM5, &touch_value);
+	  touch_pad_read_filtered(TOUCH_PAD_NUM5, &touch_value);
       s_pad_init_val[TOUCH_PAD_NUM5] = touch_value;
       ESP_LOGI(TAG, "test init touch val: %d\n", touch_value);
       ESP_ERROR_CHECK(touch_pad_set_thresh(TOUCH_PAD_NUM5, touch_value * 2 / 3));
 
-		touch_pad_read_filtered(TOUCH_PAD_NUM6, &touch_value);
+	  touch_pad_read_filtered(TOUCH_PAD_NUM6, &touch_value);
       s_pad_init_val[TOUCH_PAD_NUM6] = touch_value;
       ESP_LOGI(TAG, "test init touch val: %d\n", touch_value);
       ESP_ERROR_CHECK(touch_pad_set_thresh(TOUCH_PAD_NUM6, touch_value * 2 / 3));
@@ -257,13 +235,12 @@ static int VolLevel = 0x80;           // Set Attenuation to -70dB (0xBC)
 			  show_message = 1;
 			  if(VolLevel<=49 || Muted)
 			  {
-				  ESP_LOGI(TAG,"Min. Volume reached (%d) or muted.",VolLevel);
+				  ESP_LOGI(TAG,"Max. Volume reached (%d) or muted.",VolLevel);
 			  }
 			  else
 			  {
 				  ProcessVolume=1;
 				  VolLevel=VolLevel-2;
-
 				  ESP_LOGI(TAG, "Volumelevel: %d", VolLevel);
 			  }
 		  }
@@ -279,9 +256,9 @@ static int VolLevel = 0x80;           // Set Attenuation to -70dB (0xBC)
 			  // that application is running
 			  show_message = 1;
 
-			  if(VolLevel>=254 || Muted)
+			  if(VolLevel>=254)
 			  {
-				  ESP_LOGI(TAG,"Max. Volume reached (%d) or muted.",VolLevel);
+				  ESP_LOGI(TAG,"Min. Volume reached (%d).",VolLevel);
 			  }
 			  else
 			  {
@@ -291,30 +268,24 @@ static int VolLevel = 0x80;           // Set Attenuation to -70dB (0xBC)
 			  }
 		  }
 
-if(Muted)
-		  {
-			  int ret;
-			  ret = PCMVOLUME(I2C_NUM_1,0x4C,0xff,0xff);
-			  if (ret == ESP_FAIL) {
-				  printf("I2C Fail\n");
+		if(Muted)
+			  {
+				  PCMCONTROL(I2C_NUM_1,0x4C,0x80,0xBD,0xff);	// Select Page 0, Register BD.
+				  PCMCONTROL(I2C_NUM_1,0x4C,0x80,0xBE,0xff);	// Select Page 0, Register BE.
+				  WasMuted = 1;
+				  vTaskDelay(100 / portTICK_PERIOD_MS);
 			  }
-			  WasMuted = 1;
-			  vTaskDelay(100 / portTICK_PERIOD_MS);
-		  }
-		  else
-		  {
+			  else
+			  {
 
-		  if(ProcessVolume == 1 || WasMuted == 1)
-		  {
-			  int ret;
-			  ret = PCMVOLUME(I2C_NUM_1,0x4C,VolLevel,VolLevel);
-			  if (ret == ESP_FAIL) {
-				  printf("I2C Fail\n");
+			  if(ProcessVolume == 1 || WasMuted == 1)
+			  {
+				  PCMCONTROL(I2C_NUM_1,0x4C,0x80,0xBD,VolLevel);	// Select Page 0, Register BD.
+				  PCMCONTROL(I2C_NUM_1,0x4C,0x80,0xBE,VolLevel);	// Select Page 0, Register BE.
+				  vTaskDelay(100 / portTICK_PERIOD_MS);
+				  ProcessVolume = 0;
+				  WasMuted = 0;
 			  }
-			  vTaskDelay(100 / portTICK_PERIOD_MS);
-			  ProcessVolume = 0;
-			  WasMuted = 0;
-		  }
 		  }
 		  vTaskDelay(10 / portTICK_PERIOD_MS);
 
@@ -470,17 +441,15 @@ void oled_scroll(void) {
 	{
 		SSD1306_GotoXY(2, 4);
 		SSD1306_Puts("Volume: Mute       ", &Font_7x10, SSD1306_COLOR_WHITE);
-		  SSD1306_UpdateScreen();
+		SSD1306_UpdateScreen();
 	}
 	else
 	{
-
-
-	  char str[15];
-	  sprintf(str, "Volume: -%d dB               ", ((VolLevel-48)/2));
-	SSD1306_GotoXY(2, 4);
-	SSD1306_Puts(str, &Font_7x10, SSD1306_COLOR_WHITE);
-	  SSD1306_UpdateScreen();
+		char str[15];
+		sprintf(str, "Volume: -%d dB               ", ((VolLevel-48)/2));
+		SSD1306_GotoXY(2, 4);
+		SSD1306_Puts(str, &Font_7x10, SSD1306_COLOR_WHITE);
+		SSD1306_UpdateScreen();
 	}
 
   if (surl == NULL) return;
@@ -490,12 +459,8 @@ void oled_scroll(void) {
   int w = strlen(surl) * 7;
   if (w <= WIDTH) return;
 
-
-
-
   SSD1306_GotoXY(2 - x, 36);
   SSD1306_Puts(surl, &Font_7x10, SSD1306_COLOR_WHITE);
-
 
   x++;
   if (x > w) x = -WIDTH;
@@ -572,22 +537,17 @@ static void i2c_example_master_init()
     conf.scl_pullup_en = GPIO_PULLUP_ENABLE;
     conf.master.clk_speed = I2C_EXAMPLE_MASTER_FREQ_HZ;
     i2c_param_config(i2c_master_port, &conf);
-    i2c_driver_install(i2c_master_port, conf.mode,
-                       I2C_EXAMPLE_MASTER_RX_BUF_DISABLE,
-                       I2C_EXAMPLE_MASTER_TX_BUF_DISABLE, 0);
+    i2c_driver_install(i2c_master_port, conf.mode, I2C_EXAMPLE_MASTER_RX_BUF_DISABLE, I2C_EXAMPLE_MASTER_TX_BUF_DISABLE, 0);
 }
 
 #define WIFI_LIST_NUM   10
 
 #define TAG "main"
 
-
 //Priorities of the reader and the decoder thread. bigger number = higher prio
 #define PRIO_READER configMAX_PRIORITIES -3
 #define PRIO_MQTT configMAX_PRIORITIES - 3
 #define PRIO_CONNECT configMAX_PRIORITIES -1
-
-
 
 /* event handler for pre-defined wifi events */
 static esp_err_t event_handler(void *ctx, system_event_t *event)
@@ -688,9 +648,7 @@ static void start_wifi()
     set_wifi_credentials();
 
     /* Wait for the callback to set the CONNECTED_BIT in the event group. */
-    xEventGroupWaitBits(wifi_event_group, CONNECTED_BIT,
-                        false, true, portMAX_DELAY);
-
+    xEventGroupWaitBits(wifi_event_group, CONNECTED_BIT, false, true, portMAX_DELAY);
     ui_queue_event(UI_CONNECTED);
 }
 
@@ -699,7 +657,6 @@ static void http_server(void *pvParameters);
 static renderer_config_t *create_renderer_config()
 {
     renderer_config_t *renderer_config = calloc(1, sizeof(renderer_config_t));
-
     renderer_config->bit_depth = I2S_BITS_PER_SAMPLE_16BIT;
     renderer_config->i2s_num = I2S_NUM_0;
     renderer_config->sample_rate = 44100;
@@ -887,32 +844,23 @@ void app_main()
     print_mux = xSemaphoreCreateMutex();
     ESP_LOGI(TAG, "starting app_main()");
     ESP_LOGI(TAG, "RAM left: %u", esp_get_free_heap_size());
-
     init_hardware();
 
 #ifdef CONFIG_BT_SPEAKER_MODE
     bt_speaker_start(create_renderer_config());
-      i2c_example_master_init();
+	i2c_example_master_init();
     PCM5122_init();     // DAC
     SSD1306_Init();		// OLED
-      i2c_test(1);
-    ChangeVolume(0,0);
-    
+	i2c_test(1);
 #else
     start_wifi();
     i2c_example_master_init();
-      PCM5122_init();     // DAC
+	PCM5122_init();     // DAC
     SSD1306_Init();			// OLED
     i2c_test(1);
-
     start_web_radio();
-
     i2c_test(0);
     
- 
-
-
-//xTaskCreate(&ChangeVolume, "ChangeVolume", 2048, NULL, 5, NULL);
 // Initialize touch pad peripheral, it will start a timer to run a filter
 ESP_LOGI(TAG, "Initializing touch pad");
 touch_pad_init();

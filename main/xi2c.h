@@ -33,9 +33,8 @@ esp_err_t X_RdDWord(i2c_port_t i2c_num, uint8_t i2c_add, uint8_t index, uint32_t
 esp_err_t X_PollingDelay(void);
 esp_err_t X_WrByte1(i2c_port_t i2c_num, uint8_t i2c_add, uint8_t data_wr);
 
-// Added functions for easy writing to the PCM5122
+// Added function for easy writing to the PCM5122
 
-esp_err_t PCMVOLUME(i2c_port_t i2c_num, uint8_t i2c_add, uint8_t attl, uint8_t attr);                   // Usage: PCMVOLUME(I2C_NUM_1,0x4C,0xff,0xff)           I2C port, I2C address, volume left, volume right
 esp_err_t PCMCONTROL(i2c_port_t i2c_num, uint8_t i2c_add, uint8_t page, uint8_t reg, uint8_t data);     // Usage: PCMCONTROL(I2C_NUM_1,0x4C,0x80,0x82,0x00)     I2C port, I2C address, page, register, data
 
 

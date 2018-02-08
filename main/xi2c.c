@@ -215,22 +215,7 @@ esp_err_t X_PollingDelay(void) {
 
 }
 
-// Added functions for easy writing to the PCM5122
-
-esp_err_t PCMVOLUME(i2c_port_t i2c_num, uint8_t i2c_add, uint8_t attl, uint8_t attr) {
-
-    uint8_t XI2CBufferPage[512];
-    uint8_t XI2CBufferAtt[512];
-    XI2CBufferPage[0] = 0x80;
-    XI2CBufferAtt[0] = 0xBD;
-    XI2CBufferAtt[1] = attl;
-    XI2CBufferAtt[2] = 0xBE;
-    XI2CBufferAtt[3] = attr;
-    esp_err_t ret = XI2CWrite(i2c_num, i2c_add, XI2CBufferPage, 0x1);
-    esp_err_t ret2 = XI2CWrite(i2c_num, i2c_add, XI2CBufferAtt, 0x4);
-    return ret;
-}
-
+// Added function for easy writing to the PCM5122
 esp_err_t PCMCONTROL(i2c_port_t i2c_num, uint8_t i2c_add, uint8_t page, uint8_t reg, uint8_t data) {
     
     uint8_t XI2CBufferPage[512];
@@ -239,7 +224,7 @@ esp_err_t PCMCONTROL(i2c_port_t i2c_num, uint8_t i2c_add, uint8_t page, uint8_t 
     XI2CBufferPage[0] = page;
     XI2CBufferRegData[0] = reg;
     XI2CBufferRegData[1] = data;
-    esp_err_t ret = XI2CWrite(i2c_num, i2c_add, XI2CBufferPage, 0x1);
+    esp_err_t ret  = XI2CWrite(i2c_num, i2c_add, XI2CBufferPage, 0x1);
     esp_err_t ret2 = XI2CWrite(i2c_num, i2c_add, XI2CBufferRegData, 0x2);
     return ret;
 }
